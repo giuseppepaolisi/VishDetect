@@ -21,7 +21,7 @@ SUPPORTED_MODELS = [
 ]
 
 class BaseVishingClassifier(ABC):
-    """Base class for vishing classifiers"""
+    """Base class per i classificatori di vishing"""
     
     def __init__(self, model_name: str, max_length: int = 2048):
         self.model_name = model_name
@@ -33,7 +33,7 @@ class BaseVishingClassifier(ABC):
         self.model = self.model.to(self.device)
         
     def truncate_text(self, text: str, prompt_template: str) -> str:
-        """Truncate text to respect model's maximum length"""
+        """Tronca il testo per rispettare la lunghezza massima del modello"""
         prompt_tokens = len(self.tokenizer.encode(prompt_template))
         max_text_tokens = self.max_length - prompt_tokens - 50
         
@@ -47,11 +47,11 @@ class BaseVishingClassifier(ABC):
     
     @abstractmethod
     def create_prompt(self, text: str) -> str:
-        """Create model-specific prompt"""
+        """Crea un prompt specifico per il modello"""
         pass
     
     def classify_single(self, text: str) -> Tuple[int, float]:
-        """Classify a single conversation"""
+        """Classifica una singola conversazione"""
         prompt = self.create_prompt(text)
         inputs = self.tokenizer(prompt, return_tensors="pt", truncation=True, max_length=self.max_length).to(self.device)
         
@@ -71,11 +71,11 @@ class BaseVishingClassifier(ABC):
     
     @abstractmethod
     def _process_response(self, response: str) -> Tuple[int, float]:
-        """Process model response to get prediction and confidence"""
+        """Elabora la risposta del modello per ottenere la predizione e la confidenza"""
         pass
     
     def classify_conversations(self, conversations: List[str]) -> Tuple[List[int], List[float]]:
-        """Classify a list of conversations"""
+        """Classifica una lista di conversazioni"""
         predictions = []
         confidences = []
         
@@ -87,7 +87,7 @@ class BaseVishingClassifier(ABC):
         return predictions, confidences
 
 class TinyLlamaClassifier(BaseVishingClassifier):
-    """TinyLlama-specific implementation"""
+    """Implementazione specifica per TinyLlama"""
     
     def create_prompt(self, text: str) -> str:
         template = """<human>Analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. 
@@ -117,7 +117,7 @@ class TinyLlamaClassifier(BaseVishingClassifier):
             return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
 
 class GPTNeoClassifier(BaseVishingClassifier):
-    """GPT-Neo-specific implementation"""
+    """Implementazione specifica per GPT-Neo"""
     
     def create_prompt(self, text: str) -> str:
         template = """Analyze this conversation and determine if it's a vishing (phone fraud) attempt.
@@ -145,7 +145,7 @@ class GPTNeoClassifier(BaseVishingClassifier):
             return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
 
 class GemmaClassifier(BaseVishingClassifier):
-    """Gemma-specific implementation"""
+    """Implementazione specifica per Gemma"""
     
     def create_prompt(self, text: str) -> str:
         template = """<start_of_turn>user
@@ -158,28 +158,26 @@ class GemmaClassifier(BaseVishingClassifier):
         La mia classificazione è: """
         
         text = self.truncate_text(text, template)
-        return f"""<start_of_turn>user
-        Classifica questa conversazione come tentativo di vishing (frode telefonica) o conversazione legittima.
-        Rispondi solo con VISHING per frode telefonica o LEGITTIMA per conversazione normale.
+        return f"""<human>Analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. 
+        Please answer only with 'VISHING' if it's a phone fraud or 'LEGITIMATE' if it's a normal conversation.
+        
+        Conversation: {text}</human>
 
-        Conversazione: {text}</start_of_turn>
-
-        <start_of_turn>assistant
-        La mia classificazione è: """
+        <assistant>Based on my analysis of the conversation, my answer is: """
     
     def _process_response(self, response: str) -> Tuple[int, float]:
-        response = response.split("La mia classificazione è: ")[-1].strip().upper()
+        response = response.split("my answer is: ")[-1].strip().upper()
         base_confidence = 0.8
         
         if "VISHING" in response:
             return 1, base_confidence
-        elif "LEGITTIMA" in response:
+        elif "LEGITIMATE" in response:
             return 0, base_confidence
         else:
-            return (1, base_confidence * 0.75) if "FRODE" in response or "TRUFFA" in response else (0, base_confidence * 0.75)
+            return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
 
 class Phi2Classifier(BaseVishingClassifier):
-    """Phi-2-specific implementation"""
+    """Implementazione specifica per Phi-2"""
     
     def create_prompt(self, text: str) -> str:
         template = """Instruct: Analyze the following conversation and classify it as either a vishing attempt (phone fraud) or legitimate conversation.
@@ -209,7 +207,7 @@ class Phi2Classifier(BaseVishingClassifier):
             return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
 
 def get_classifier(model_name: str) -> BaseVishingClassifier:
-    """Factory function to get the appropriate classifier based on model name"""
+    """Funzione factory per ottenere il classificatore appropriato in base al nome del modello"""
     classifiers = {
         MODEL_TINY_LLAMA: TinyLlamaClassifier,
         MODEL_GPT_NEO: GPTNeoClassifier,
@@ -249,10 +247,10 @@ def main(model_name: str):
     })
     
     # Stampa i risultati
-    print("\nClassification Report:")
+    print("\nRapporto di classificazione:")
     print(classification_report(df['Label'], predictions))
     
-    print("\nConfusion Matrix:")
+    print("\nMatrice di confusione:")
     print(confusion_matrix(df['Label'], predictions))
     
     # Crea il nome del file di output con timestamp e nome del modello
