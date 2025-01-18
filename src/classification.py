@@ -60,7 +60,9 @@ class BaseVishingClassifier(ABC):
                 **inputs,
                 max_new_tokens=20,
                 num_return_sequences=1,
-                temperature=0.7,
+                temperature=0.1,
+                do_sample=True,
+                top_p=0.9,
                 pad_token_id=self.tokenizer.eos_token_id
             )
             
