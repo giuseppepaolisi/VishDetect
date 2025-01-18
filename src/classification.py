@@ -5,6 +5,7 @@ from typing import List, Tuple
 from sklearn.metrics import classification_report, confusion_matrix
 from datetime import datetime
 from abc import ABC, abstractmethod
+from tqdm import tqdm
 
 # Definizione dei modelli supportati
 MODEL_TINY_LLAMA = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
@@ -77,7 +78,8 @@ class BaseVishingClassifier(ABC):
         predictions = []
         confidences = []
         
-        for text in conversations:
+        # Utilizza tqdm per monitorare il progresso
+        for text in tqdm(conversations, desc="Classificazione conversazioni", unit="conversazione"):
             pred, conf = self.classify_single(text)
             predictions.append(pred)
             confidences.append(conf)
@@ -230,4 +232,4 @@ def main(model_name: str):
     return results_df
 
 if __name__ == "__main__":
-    results_df = main(MODEL_PHI_2)
+    results_df = main(MODEL_GPT_NEO)
