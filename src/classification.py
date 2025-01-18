@@ -9,14 +9,12 @@ from abc import ABC, abstractmethod
 # Definizione dei modelli supportati
 MODEL_TINY_LLAMA = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 MODEL_GPT_NEO = "EleutherAI/gpt-neo-1.3B"
-MODEL_GEMMA = "google/gemma-2b-it"
 MODEL_PHI_2 = "microsoft/phi-2"
 
 # Lista di tutti i modelli supportati
 SUPPORTED_MODELS = [
     MODEL_TINY_LLAMA,
     MODEL_GPT_NEO,
-    MODEL_GEMMA,
     MODEL_PHI_2
 ]
 
@@ -144,38 +142,6 @@ class GPTNeoClassifier(BaseVishingClassifier):
         else:
             return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
 
-class GemmaClassifier(BaseVishingClassifier):
-    """Implementazione specifica per Gemma"""
-    
-    def create_prompt(self, text: str) -> str:
-        template = """<start_of_turn>user
-        Classifica questa conversazione come tentativo di vishing (frode telefonica) o conversazione legittima.
-        Rispondi solo con VISHING per frode telefonica o LEGITTIMA per conversazione normale.
-        
-        Conversazione: </start_of_turn>
-        
-        <start_of_turn>assistant
-        La mia classificazione è: """
-        
-        text = self.truncate_text(text, template)
-        return f"""<human>Analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. 
-        Please answer only with 'VISHING' if it's a phone fraud or 'LEGITIMATE' if it's a normal conversation.
-        
-        Conversation: {text}</human>
-
-        <assistant>Based on my analysis of the conversation, my answer is: """
-    
-    def _process_response(self, response: str) -> Tuple[int, float]:
-        response = response.split("my answer is: ")[-1].strip().upper()
-        base_confidence = 0.8
-        
-        if "VISHING" in response:
-            return 1, base_confidence
-        elif "LEGITIMATE" in response:
-            return 0, base_confidence
-        else:
-            return (1, base_confidence * 0.75) if "FRAUD" in response or "SCAM" in response else (0, base_confidence * 0.75)
-
 class Phi2Classifier(BaseVishingClassifier):
     """Implementazione specifica per Phi-2"""
     
@@ -211,7 +177,6 @@ def get_classifier(model_name: str) -> BaseVishingClassifier:
     classifiers = {
         MODEL_TINY_LLAMA: TinyLlamaClassifier,
         MODEL_GPT_NEO: GPTNeoClassifier,
-        MODEL_GEMMA: GemmaClassifier,
         MODEL_PHI_2: Phi2Classifier
     }
     
@@ -267,5 +232,4 @@ def main(model_name: str):
 if __name__ == "__main__":
     results_df = main(MODEL_TINY_LLAMA)
     results_df = main(MODEL_GPT_NEO)
-    results_df = main(MODEL_GEMMA)
     results_df = main(MODEL_PHI_2)
