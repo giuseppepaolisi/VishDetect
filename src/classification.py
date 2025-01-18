@@ -230,6 +230,4 @@ def main(model_name: str):
     return results_df
 
 if __name__ == "__main__":
-    results_df = main(MODEL_TINY_LLAMA)
-    results_df = main(MODEL_GPT_NEO)
     results_df = main(MODEL_PHI_2)
