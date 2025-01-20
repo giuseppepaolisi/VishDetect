@@ -78,7 +78,6 @@ class BaseVishingClassifier(ABC):
         predictions = []
         confidences = []
         
-        # Utilizza tqdm per monitorare il progresso
         for text in tqdm(conversations, desc="Classificazione conversazioni", unit="conversazione"):
             pred, conf = self.classify_single(text)
             predictions.append(pred)
@@ -194,8 +193,15 @@ def main(model_name: str):
     Args:
         model_name (str): Nome del modello da utilizzare
     """
-    # Carica il dataset
-    df = pd.read_csv('../datasets/EngCCViD_v1.3.csv')
+    df = pd.read_csv(
+        '../datasets/EngCCViD_v1.3.csv',
+        quoting=pd.io.common.QUOTE_NONNUMERIC,
+        escapechar='\\',
+        na_filter=False 
+    )
+    
+    # Verifica che tutti i transcript siano stringhe
+    df['Transcript'] = df['Transcript'].astype(str)
     
     # Inizializza il classificatore per il modello specifico
     classifier = get_classifier(model_name)
@@ -226,7 +232,14 @@ def main(model_name: str):
     output_file = f'predictions_{model_short_name}_{timestamp}.csv'
     
     # Salva il DataFrame in CSV
-    results_df.to_csv(output_file, index=False)
+    results_df.to_csv(
+        output_file,
+        index=False,
+        quoting=pd.io.common.QUOTE_NONNUMERIC,  # Forza il quoting per campi non numerici
+        escapechar='\\',  # Gestisce eventuali caratteri di escape
+        na_rep=''        # Gestisce i valori NA/NaN
+    )
+    
     print(f"\nRisultati salvati in: {output_file}")
     
     return results_df
