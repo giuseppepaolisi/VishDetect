@@ -6,6 +6,7 @@ from sklearn.metrics import classification_report, confusion_matrix
 from datetime import datetime
 from abc import ABC, abstractmethod
 from tqdm import tqdm
+import csv
 
 # Definizione dei modelli supportati
 MODEL_TINY_LLAMA = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
