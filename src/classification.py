@@ -195,7 +195,7 @@ def main(model_name: str):
     """
     df = pd.read_csv(
         '../datasets/EngCCViD_v1.3.csv',
-        quoting=pd.io.common.QUOTE_NONNUMERIC,
+        quoting=csv.QUOTE_NONNUMERIC,
         escapechar='\\',
         na_filter=False 
     )
@@ -235,7 +235,7 @@ def main(model_name: str):
     results_df.to_csv(
         output_file,
         index=False,
-        quoting=pd.io.common.QUOTE_NONNUMERIC,  # Forza il quoting per campi non numerici
+        quoting=csv.QUOTE_NONNUMERIC,  # Forza il quoting per campi non numerici
         escapechar='\\',  # Gestisce eventuali caratteri di escape
         na_rep=''        # Gestisce i valori NA/NaN
     )
