@@ -2,7 +2,11 @@ import pandas as pd
 import deepl
 import time
 
-auth_key = 'token'
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+auth_key = os.getenv('TOKEN_DEEPL')
 translator = deepl.Translator(auth_key)
 
 df = pd.read_csv('KorCCViD_v1.3.csv')

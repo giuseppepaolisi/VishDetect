@@ -6,6 +6,14 @@ from sklearn.metrics import classification_report, confusion_matrix
 from datetime import datetime
 from tqdm import tqdm
 import csv
+from dotenv import load_dotenv
+import os
+from huggingface_hub import login
+
+load_dotenv()
+token = os.getenv('TOKEN_HUGGINGFACE')
+
+login(token=token)
 
 # Modello specifico
 MODEL_LLAMA_1B_INSTRUCT = "meta-llama/Llama-3.2-1B-Instruct"
