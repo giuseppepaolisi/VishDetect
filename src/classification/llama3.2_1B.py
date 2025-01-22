@@ -31,41 +31,52 @@ class Llama1BInstructClassifier:
             device_map="auto",
         )
 
-    def truncate_text(self, text: str, prompt_template: str) -> str:
-        """Tronca il testo per rispettare la lunghezza massima del modello"""
-        max_text_tokens = self.max_length - len(prompt_template) - 50
-
-        if len(text) > max_text_tokens:
-            text = text[:max_text_tokens] + " [TRUNCATED]"
-
-        return text
-
-    def summarize_conversation(self, text: str) -> str:
-        """Genera una sintesi della conversazione"""
-        prompt = f"""Summarize the following conversation in a single sentence:\nConversation: {text}.\nSummary:"""
-
-        outputs = self.pipe(prompt, max_new_tokens=50)
-        summary = outputs[0]["generated_text"].strip()
-        return summary
-
-    def create_prompt(self, text: str, strategy: int) -> str:
-        """Crea un prompt specifico in base alla strategia"""
+    def create_message(self, text: str, strategy: int) -> List[dict]:
+        """Crea un messaggio conforme al formato richiesto dal modello."""
         if strategy == 1:
-            template = """A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\nAnalyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'.\nConversation: {conversation}."""
+            system_content = (
+                "A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\nAnalyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'. "
+            )
         elif strategy == 2:
-            template = """A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\nHere is an example of a vishing conversation:\nExample: \"A scammer, posing as Cheolmin Park from the Audit Department, repeatedly insists on resolving a \"fraudulent transaction\" involving the victim’s account. The caller uses complex and confusing language to create urgency, claiming issues with processing paperwork and requiring the victim to pay additional funds (e.g., $4 million won or $150) to resolve the matter, avoid penalties, and secure reimbursements.\"\nNow analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'.\nConversation: {conversation}."""
+            system_content = (
+                "A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\nHere is an example of a vishing conversation:\nExample: \"A scammer, posing as Cheolmin Park from the Audit Department, repeatedly insists on resolving a \"fraudulent transaction\" involving the victim’s account. The caller uses complex and confusing language to create urgency, claiming issues with processing paperwork and requiring the victim to pay additional funds (e.g., $4 million won or $150) to resolve the matter, avoid penalties, and secure reimbursements.\"\nNow analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'."
+            )
         else:
             raise ValueError("Strategia non valida. Usare 1 o 2.")
 
-        return template.format(conversation=self.truncate_text(text, template))
+        messages = [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": text},
+        ]
+        return messages
+    
+    def summarize_conversation(self, text: str) -> str:
+        """Genera una sintesi della conversazione"""
+        system_content = f"""Summarize the following conversation in a single sentence:"""
+        messages = [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": text},
+        ]
+        prompt = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in messages])
+        outputs = self.pipe(prompt, max_new_tokens=50, temperature=0.1, top_p=0.9)
+        
+        summary = outputs[0]["generated_text"].strip()
+        return summary
 
     def classify_single(self, text: str, strategy: int, summarized: bool = False) -> Tuple[int, float]:
-        """Classifica una singola conversazione"""
+        """Classifica una singola conversazione."""
+
         if summarized:
             text = self.summarize_conversation(text)
 
-        prompt = self.create_prompt(text, strategy)
-        outputs = self.pipe(prompt, max_new_tokens=20, temperature=0.1, top_p=0.9)
+        messages = self.create_message(text, strategy)
+        
+        # Serializza i messaggi in un'unica stringa
+        prompt = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in messages])
+        
+        # Chiamata al modello con la stringa generata
+        outputs = self.pipe(prompt, max_new_tokens=50, temperature=0.1, top_p=0.9)
+        
         response = outputs[0]["generated_text"]
         return self._process_response(response)
 
@@ -95,10 +106,10 @@ class Llama1BInstructClassifier:
 
 def main(model_name: str):
     """
-    Esegue la classificazione usando il modello Llama-3.2-1B-Instruct
+    Esegue la classificazione usando il modello passato come parametro
 
     Args:
-        model_name (str): Nome del modello da utilizzare
+        model_name (str): Nome del modello da utilizzare.
     """
     df = pd.read_csv(
         '../datasets/dataset_tradotto1.3.csv',
