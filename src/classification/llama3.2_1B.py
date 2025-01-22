@@ -65,7 +65,8 @@ class Llama1BInstructClassifier:
             """
         elif strategy == 2:
             # Strategia 2: Esempio di conversazione vishing e conversazione target
-            template = """Here is an example of a vishing conversation:
+            template = """A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.
+            Here is an example of a vishing conversation:
             Example: "A scammer, posing as Cheolmin Park from the Audit Department, repeatedly insists on resolving a "fraudulent transaction" involving the victim’s account. The caller uses complex and confusing language to create urgency, claiming issues with processing paperwork and requiring the victim to pay additional funds (e.g., $4 million won or $150) to resolve the matter, avoid penalties, and secure reimbursements. They repeatedly mention fraudulent payments, legal repercussions, and deadlines to pressure the victim into compliance, suggesting debit card reissues and delays to keep the victim engaged."
             Now analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'.
             Conversation: {conversation}.
