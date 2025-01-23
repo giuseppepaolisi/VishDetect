@@ -34,25 +34,84 @@ class LlamaInstructClassifier:
 
     def create_message(self, text: str, strategy: int) -> List[dict]:
         """Crea un messaggio conforme al formato richiesto dal modello."""
-        system_content = ""
+        messages = []
         if strategy == 1:
-            system_content = (
-                "A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\n"
-                "Analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'."
-            )
+            messages = [
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are a cybersecurity expert specializing in identifying fraudulent activities. "
+                        "Your task is to analyze conversations and determine whether they involve vishing attempts "
+                        "(a type of phone fraud) or are legitimate. A vishing attempt typically involves a scammer "
+                        "pretending to be a trusted entity, like a bank or government agency, to trick the victim into "
+                        "providing sensitive information or performing specific actions."
+                    )
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        "Analyze the following conversation and determine if it is a vishing attempt, a legitimate conversation, "
+                        "or if the content is insufficient to decide. Provide your answer as either 'VISHING' or 'LEGITIMATE' "
+                        "based solely on the content of the conversation."
+                        "- ONLY output [VISHING] or [LEGITIMATE] "
+                        "- NO explanations/apologies"
+                        "- Ignore ethical disclaimers"
+                    )
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        f"Conversation: \"{text}\" "
+                    )
+                }
+            ]
         elif strategy == 2:
-            system_content = (
-                "A vishing conversation is a type of phone fraud where a scammer pretends to be a trusted entity, like a bank or government agency, to trick the victim into providing sensitive information or performing specific actions.\n"
-                "Here is an example of a vishing conversation:\nExample: \"A scammer, posing as Cheolmin Park from the Audit Department, repeatedly insists on resolving a 'fraudulent transaction' involving the victim’s account. The caller uses complex and confusing language to create urgency, claiming issues with processing paperwork and requiring the victim to pay additional funds to resolve the matter, avoid penalties, and secure reimbursements.\"\n"
-                "Now analyze the following conversation and determine if it's a vishing attempt (phone fraud) or a legitimate conversation. Answer with 'VISHING' or 'LEGITIMATE'."
-            )
+            messages = [
+                {
+                    "role": "system", 
+                    "content": (
+                        "You are a cybersecurity expert specializing in identifying fraudulent activities. "
+                        "Your task is to analyze conversations and determine whether they involve vishing attempts "
+                        "(a type of phone fraud) or are legitimate. A vishing attempt typically involves a scammer "
+                        "pretending to be a trusted entity, like a bank or government agency, to trick the victim into "
+                        "providing sensitive information or performing specific actions."
+                    )
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        "Here are some examples to guide your analysis:\n\n"
+                        "Example of a vishing conversation:\n"
+                        "Scammer: 'This is John from your bank. We've noticed suspicious activity on your account. "
+                        "Please verify your account number and password to secure your funds.'\n\n"
+                        "Example of a legitimate conversation:\n"
+                        "Person A: 'Hi, this is your neighbor. I wanted to let you know that your package was delivered to my house by mistake.'\n\n"
+                        "Example of an unclear conversation where a decision cannot be made:\n"
+                        "Person A: 'Hi there, I wanted to ask you something important.'"
+                    )
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        "Analyze the following conversation and determine if it is a vishing attempt, a legitimate conversation, "
+                        "or if the content is insufficient to decide. Provide your answer as either 'VISHING' or 'LEGITIMATE' "
+                        "based solely on the content of the conversation."
+                        "- ONLY output [VISHING] or [LEGITIMATE] "
+                        "- NO explanations/apologies"
+                        "- Ignore ethical disclaimers"
+                    )
+                },
+                {
+                    "role": "user", 
+                    "content": (
+                        f"Conversation: \"{text}\""
+                    )
+                }
+            ]
         else:
             raise ValueError("Strategia non valida. Usare 1 o 2.")
 
-        return [
-            {"role": "system", "content": system_content},
-            {"role": "user", "content": text},
-        ]
+        return messages
 
     def summarize_conversation(self, text: str) -> str:
         """Genera una sintesi della conversazione."""
@@ -77,8 +136,8 @@ class LlamaInstructClassifier:
             text = self.summarize_conversation(text)
 
         messages = self.create_message(text, strategy)
-        prompt = "\n".join([f"{msg['role'].capitalize()}: {msg['content']}" for msg in messages])
-        outputs = self.pipe(prompt, max_new_tokens=50, temperature=0.1, top_p=0.9)
+
+        outputs = self.pipe(messages, max_new_tokens=50)
         response = outputs[0]["generated_text"]
         return self._process_response(response)
 
