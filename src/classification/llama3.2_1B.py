@@ -32,6 +32,30 @@ class LlamaInstructClassifier:
             device_map="auto",
         )
 
+    def _truncate_tokens(self, messages: List[dict]) -> List[dict]:
+        """
+        Trunca i messaggi per rispettare il limite massimo di token consentiti dal modello.
+        """
+        total_length = 0
+        truncated_messages = []
+
+        # Calcolo dei token per ciascun messaggio
+        for message in reversed(messages):  # Partendo dall'ultimo messaggio
+            message_text = f"{message['role']}: {message['content']}"
+            tokens = len(message_text.split())  # Conteggio approssimativo basato sulle parole
+
+            if total_length + tokens > self.max_length:
+                # Se supera il limite, tronca il contenuto del messaggio
+                allowed_tokens = self.max_length - total_length
+                truncated_content = " ".join(message['content'].split()[:allowed_tokens])
+                truncated_messages.insert(0, {"role": message["role"], "content": truncated_content})
+                break
+            else:
+                truncated_messages.insert(0, message)
+                total_length += tokens
+
+        return truncated_messages
+    
     def create_message(self, text: str, strategy: int) -> List[dict]:
         """Crea un messaggio conforme al formato richiesto dal modello."""
         messages = []
@@ -110,8 +134,9 @@ class LlamaInstructClassifier:
             ]
         else:
             raise ValueError("Strategia non valida. Usare 1 o 2.")
-
-        return messages
+        # Troncamento dei messaggi per rispettare il limite massimo di token
+        truncated_messages = self._truncate_tokens(messages)
+        return truncated_messages
 
     def summarize_conversation(self, text: str) -> str:
         """Genera una sintesi della conversazione."""
