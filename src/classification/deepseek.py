@@ -136,8 +136,10 @@ def main(model_name: str):
     Args:
         model_name (str): Nome del modello da utilizzare.
     """
+    script_dir = os.path.dirname(__file__)
+    dataset_path = os.path.join(script_dir, '../../datasets/dataset2.1.csv')
     df = pd.read_csv(
-        'dataset_tradotto1.3.csv',
+        dataset_path,
         quoting=csv.QUOTE_NONNUMERIC,
         escapechar='\\',
         na_filter=False
