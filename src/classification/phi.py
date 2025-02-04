@@ -186,8 +186,8 @@ def main(model_name: str):
     print(f"\nUtilizzo del modello: {model_name}")
 
     # Esegui la classificazione con ogni strategia
-    for strategy in range(2, 3):
-        for summarized in [True]:
+    for strategy in range(1, 3):
+        for summarized in [False, True]:
             mode = "sintetizzata" if summarized else "originale"
             print(f"\nStrategia {strategy} con conversazione {mode}")
             # The summarized argument was removed in the following line
