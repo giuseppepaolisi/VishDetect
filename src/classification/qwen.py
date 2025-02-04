@@ -27,16 +27,17 @@ class Qwen1_5BInstructClassifier:
         self.model_name = model_name
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+        device = {"cpu" if device == "cpu" else "cuda"}
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype="auto",
-            device_map="auto"
+            device_map=device,
         )
         self.pipe = pipeline(
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            device_map="auto",
+            device_map=device,
         )
 
     def _truncate_tokens(self, messages: List[dict]) -> List[dict]:
