@@ -220,7 +220,7 @@ def main(model_name: str):
     """
     
     script_dir = os.path.dirname(__file__)
-    dataset_path = os.path.join(script_dir, 'dataset2.1.csv')
+    dataset_path = os.path.join(script_dir, '../../datasets/dataset2.1.csv')
     df = pd.read_csv(
         dataset_path,
         quoting=csv.QUOTE_NONNUMERIC,
