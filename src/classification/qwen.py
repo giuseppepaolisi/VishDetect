@@ -30,13 +30,13 @@ class Qwen1_5BInstructClassifier:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype="auto",
-            device_map="auto",
+            device_map=device,
         )
         self.pipe = pipeline(
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            device_map="auto",
+            device_map=device,
         )
 
     def _truncate_tokens(self, messages: List[dict]) -> List[dict]:
