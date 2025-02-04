@@ -23,21 +23,20 @@ MODEL_QWEN_3B_INSTRUCT = "Qwen/Qwen2.5-3B-Instruct"
 class Qwen1_5BInstructClassifier:
     """Classifier for the Qwen2.5-Instruct model"""
 
-    def __init__(self, model_name: str, max_length: int = 2048):
+    def __init__(self, model_name: str, max_length: int = 2048, device: str = "cpu"):
         self.model_name = model_name
         self.max_length = max_length
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
-        device = {"cpu" if device == "cpu" else "cuda"}
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype="auto",
-            device_map=device,
+            device_map="auto",
         )
         self.pipe = pipeline(
             "text-generation",
             model=self.model,
             tokenizer=self.tokenizer,
-            device_map=device,
+            device_map="auto",
         )
 
     def _truncate_tokens(self, messages: List[dict]) -> List[dict]:
