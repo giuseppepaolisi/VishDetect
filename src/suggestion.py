@@ -132,6 +132,7 @@ class PhiClassifier:
         for text in tqdm(conversations, desc="conversations", unit="conversation"):
             text, suggestion = self.classify_single(text)
             texts.append(text)
+            suggestion = ''.join(c for c in suggestion if c not in '\n"#$*')
             suggestions.append(suggestion)
 
         return pd.DataFrame({
