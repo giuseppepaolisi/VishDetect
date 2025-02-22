@@ -147,7 +147,7 @@ def main(model_name: str):
         model_name (str): Nome del modello da utilizzare.
     """
     script_dir = os.path.dirname(__file__)
-    dataset_path = os.path.join(script_dir, '../../datasets/new_dataset.csv')
+    dataset_path = os.path.join(script_dir, '../datasets/new_dataset.csv')
     df = pd.read_csv(
         dataset_path,
         quoting=csv.QUOTE_NONNUMERIC,
@@ -179,8 +179,11 @@ def main(model_name: str):
     results_df.to_csv(
         output_file,
         index=False,
-        quoting=csv.QUOTE_NONNUMERIC,
+        sep=',',
+        quotechar='"',
+        quoting=csv.QUOTE_ALL,
         escapechar='\\',
+        line_terminator='\n',
         na_rep=''
     )
 
