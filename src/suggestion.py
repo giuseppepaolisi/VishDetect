@@ -115,7 +115,7 @@ class PhiClassifier:
 
         outputs = self.model.generate(
             **inputs,
-            max_new_tokens=200,
+            max_new_tokens=1024,
             temperature=0.6,
             pad_token_id=self.tokenizer.eos_token_id,
             eos_token_id=self.tokenizer.eos_token_id,
@@ -148,7 +148,8 @@ def main(model_name: str):
         model_name (str): Nome del modello da utilizzare.
     """
     script_dir = os.path.dirname(__file__)
-    dataset_path = os.path.join(script_dir, '../datasets/new_dataset.csv')
+    dataset_path = os.path.join('../datasets/new_dataset.csv')
+    print(dataset_path)
     df = pd.read_csv(
         dataset_path,
         quoting=csv.QUOTE_NONNUMERIC,
@@ -174,7 +175,7 @@ def main(model_name: str):
     # Crea il nome del file di output con timestamp, strategia e modalità
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     model_short_name = model_name.split('/')[-1]
-    output_file = f'results_{model_short_name}_{timestamp}.csv'
+    output_file = f'results_{model_short_name}.csv'
 
     # Salva il DataFrame in CSV
     results_df.to_csv(
@@ -184,7 +185,7 @@ def main(model_name: str):
         quotechar='"',
         quoting=csv.QUOTE_ALL,
         escapechar='\\',
-        line_terminator='\n',
+        lineterminator='\n',
         na_rep=''
     )
 
