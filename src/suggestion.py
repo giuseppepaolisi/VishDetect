@@ -40,71 +40,78 @@ class PhiClassifier:
             """Format prompt according to DeepSeek-R1 specifications"""
             system_content = (
                 """
-                Context:
-                You are provided with a transcript from a vishing (voice phishing) attempt. Vishing is a deceptive practice where fraudsters use phone calls to trick individuals into disclosing sensitive personal or financial information. Your task is to thoroughly analyze the provided conversation transcript and generate a set of targeted, actionable suggestions designed to help potential victims defend themselves against this specific vishing attempt.
+                **Context:**  
+                You are given a transcript of a vishing (voice phishing) attempt. Vishing is a deceptive practice where fraudsters use phone calls to manipulate individuals into disclosing sensitive personal or financial information. Your task is to thoroughly analyze the transcript and generate a set of targeted, actionable suggestions to help potential victims protect themselves from this specific vishing attempt.  
 
-                Inalyze vishing call transcripts to create 5 specific defense tips for non-experts. Anonymize all locations/names/companies.
+                **Task:**  
+                Analyze the vishing call transcript and create **five specific defense tips** for non-experts. Ensure all locations, names, and companies are anonymized.  
 
-                Requirements:
-                1. Identify 3-5 key red flags in the transcript
-                2. Generate exactly 5 protection tips
-                3. Format per suggestion:
-                [Number]. [Short Title]
-                Action: [Clear instruction]
-                Relevance: [Specific transcript quote + explanation]
+                **Requirements:**  
+                1. Identify and list the sentences in the transcript that indicate vishing.  
+                2. Explain why the conversation qualifies as vishing.  
+                3. Generate **exactly five** protective measures tailored to the transcript.  
+                4. Format each suggestion as follows:  
 
-                Analysis Framework:
-                a) Pressure tactics (urgency/threats)
-                b) Suspicious requests (personal/financial info)
-                c) Authority impersonation
-                d) Unusual payment/banking instructions
-                e) Incoherent narratives
+                  **[Number]. [Short Title]**  
+                  **Action:** [Clear, executable instruction]  
 
-                Strict Rules:
-                - ONLY 5 numbered items
-                - No markdown/headers
-                - Use anonymous terms like "the institution" instead of specific names
-                - Action steps must be executable by non-technical users
+                **Analysis Framework:**  
+                a) Use of pressure tactics (urgency, threats)  
+                b) Suspicious requests (personal/financial information)  
+                c) Authority impersonation  
+                d) Unusual payment or banking instructions  
+                e) Incoherent or misleading narratives  
 
-                Example:
+                **Strict Rules:**  
+                - **Provide exactly five** numbered suggestions.  
+                - **Do not use markdown, headers, or bullet points** in the response.  
+                - Use anonymous references (e.g., "the institution" instead of specific names).  
+                - Ensure that all action steps are clear and executable for non-technical users.  
 
-                Sample Conversation:
-                "They have illegally detained it inside. We did it, so if we send this regarding that point, will there be any issues with the pelvis or anything unusual? It will work. For now, our prosecution will proceed with the Financial Supervisory Service and focus on the accounts. The content can be separated for the Financial Supervisory Service certification. Please use Nonghyup once. I have never used Hana Bank. Just do it yourself and briefly provide the name of the museum where you are using it in the financial sector. Please prepare the business name for Falun Gong like this for our daughter-in-law."
+                **Example:**  
 
-                Example Suggestions:
+                *Conversation:*  
+                "They have illegally detained it inside. We did it, so if we send this regarding that point, will there be any issues with the pelvis or anything unusual? It will work. For now, our prosecution will proceed with the Financial Supervisory Service and focus on the accounts. The content can be separated for the Financial Supervisory Service certification. Please use Nonghyup once. I have never used Hana Bank. Just do it yourself and briefly provide the name of the museum where you are using it in the financial sector. Please prepare the business name for Falun Gong like this for our daughter-in-law."  
+                Exemple result:
+                *Analysis:*  
 
-                1. Verify Caller Identity Independently
-                Action: If you receive a call using official-sounding terms (e.g., referencing the Financial Supervisory Service), immediately end the conversation and contact the institution using verified, official phone numbers or websites.
-                Relevance: Attackers often impersonate authorities to gain trust. Independently verifying the caller’s identity prevents you from falling prey to false authority.
+                *Sentences indicating vishing*:
+                "They have illegally detained it inside. We did it, so if we send this regarding that point, will there be any issues with the pelvis or anything unusual? It will work."
+                "For now, our prosecution will proceed with the supervisory service and focus on the accounts."
+                "The content can be separated for the supervisory service certification."
+                "Please use a bank once. I have never used another bank."
+                "Just do it yourself and briefly provide the name of the museum where you are using it in the financial sector. Please prepare the business name for an organization like this for our family member."
 
-                2. Do Not Provide Personal or Unusual Business Information
-                Action: Refuse to share any personal details, business names, or specific operational information, especially when the requests seem unrelated or nonsensical.
-                Relevance: Requests such as “provide the name of the museum” or “prepare the business name for Falun Gong” are red flags. Legitimate institutions do not require such arbitrary information over unsolicited calls.
+                This conversation qualifies as vishing because it impersonates an authority, uses confusing language and pressure tactics, and makes suspicious requests for financial and personal information.
 
-                3. Recognize and Question Incoherent or Pressure Tactics
-                Action: Be alert when language or instructions seem confusing or forced. Politely ask for clarification or, if the response remains unclear, terminate the call.
-                Relevance: Confusing language (e.g., “issues with the pelvis”) is likely used to overwhelm you, making it easier for the scammer to exploit your uncertainty.
+                Verify Caller Identity
+                Action: Contact the institution directly using official contact details to confirm the caller’s identity.
 
-                4. Avoid Following Unverified Banking Instructions
-                Action: Do not follow instructions to “use” a particular bank or to avoid others (such as the comment regarding Hana Bank). Instead, consult your bank directly using their official communication channels.
-                Relevance: Scammers may try to divert your transactions or manipulate your banking behavior. Always use your own verified channels for financial decisions.
+                Do Not Share Sensitive Information
+                Action: Refuse to provide personal, financial, or business details to unsolicited callers.
 
-                5. Do Not Succumb to Urgency or Threats
-                Action: Remain calm if the caller invokes legal action or regulatory involvement. Take a moment to verify the claims independently rather than reacting immediately.
-                Relevance: Urgency and threats are classic pressure tactics used in vishing to compel quick, unthoughtful responses that could compromise your personal or financial security.
+                Request Written Confirmation
+                Action: Ask for clear, written instructions or official documentation before taking any action.
 
-                Task:
-                Analyze this conversation and provide exactly 5 tips following the example structure:
+                Report Suspicious Communications
+                Action: Immediately report any dubious calls to local law enforcement or a trusted fraud prevention agency.
+
+                Seek Independent Advice
+                Action: Consult a trusted advisor or legal expert to verify the legitimacy of any requests made during the call.                
                 """
             )
+
             prompt = (
                 f"{system_content}\n\n"
                 f"Conversation: «{text}»\n\n"
-                "Provide ONLY 5 numbered suggestions. Each must have:\n"
-                "- Action (concrete step)\n"
-                "- Relevance (specific transcript quote + reason)\n"
-                "Use anonymous references. No explanations beyond required fields."
+                "Analyze the conversation and list sentences that indicate vishing. "
+                "Explain why this conversation qualifies as vishing. "
+                "Provide exactly five numbered suggestions. Each must include:\n"
+                "- A short title\n"
+                "- A concrete action step\n"
+                "Use anonymous references. No explanations beyond the required fields."
             )
+
 
             return prompt
 
@@ -134,6 +141,8 @@ class PhiClassifier:
         """Classify a list of conversations."""
         texts = []
         suggestions = []
+        conversations = conversations[:10]
+        print(conversations)
 
         for text in tqdm(conversations, desc="conversations", unit="conversation"):
             text, suggestion = self.classify_single(text)
