@@ -25,9 +25,9 @@ def main():
     df1_label1 = df1[df1['Label'] == 1]
     df2_label1 = df2[df2['Label'] == 1]
 
-    # Estrai 30 istanze casuali da ogni dataset
-    df1_samples = df1_label1.sample(n=30, random_state=42)
-    df2_samples = df2_label1.sample(n=30, random_state=42)
+    # Estrai casualmente 30 istanze da ogni dataset
+    df1_samples = df1_label1.sample(n=30, random_state=np.random.randint(1000))
+    df2_samples = df2_label1.sample(n=30, random_state=np.random.randint(1000))
 
     # Crea il nuovo dataset
     new_df = pd.concat([df1_samples, df2_samples], ignore_index=True)
